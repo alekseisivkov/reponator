@@ -1,5 +1,8 @@
 package com.sivkov.reponator.compiler
 
+import com.sivkov.reponator.compiler.functions.CacheFunctionProvider
+import com.sivkov.reponator.compiler.functions.DbFunctionProvider
+import com.sivkov.reponator.compiler.functions.NetworkFunctionProvider
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
 import javax.lang.model.element.ExecutableElement
@@ -9,15 +12,19 @@ import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.Elements
 import javax.lang.model.util.Types
 
-class FunctionGenerator(private val typeUtils: Types,
-                        private val elements: Elements,
-                        private val cacheProvider: CacheFunctionProvider) {
+class FunctionGenerator(
+        private val typeUtils: Types,
+        private val elements: Elements,
+        private val nameProvider: NameProvider,
+        private val cacheProvider: CacheFunctionProvider,
+        private val storageProvider: DbFunctionProvider,
+        private val networkProvider: NetworkFunctionProvider
+) {
 
     fun generate(function: ExecutableElement) = FunSpec.overriding(function)
             .returns(function.returnType.asKotlinType())
             .addCode(buildCode(function))
             .build()
-
 
     private fun buildCode(function: ExecutableElement) = CodeBlock.builder()
             .add(buildCacheGet(function))
@@ -28,8 +35,8 @@ class FunctionGenerator(private val typeUtils: Types,
             .build()
 
     private fun buildNetworkGet(function: ExecutableElement) = CodeBlock.builder()
-            .add("%L.%L(%L)", ReponatorProcessor.networkName, computeGetFunction(function), computeArguments(function))
-            .add(".doOnNext { %L.%L(%L)", ReponatorProcessor.storageName, computeSaveFunction(function), computeArguments(function))
+            .add("%L.%L(%L)", nameProvider.networkName, networkProvider.get(function), computeArguments(function))
+            .add(".doOnNext { %L.%L(%L)", nameProvider.storageName, storageProvider.set(function), computeArguments(function))
             .indent()
             .indent()
             .add(".subscribe(%L) }", emptyObserver)
@@ -41,26 +48,21 @@ class FunctionGenerator(private val typeUtils: Types,
             .build()
 
     private fun buildStorageGet(function: ExecutableElement) = CodeBlock.builder()
-            .add("%L.%L(%L)", ReponatorProcessor.storageName, computeGetFunction(function), computeArguments(function))
+            .add("%L.%L(%L)", nameProvider.storageName, storageProvider.get(function), computeArguments(function))
             .buildSaveCache(function)
             .build()
 
     private fun CodeBlock.Builder.buildSaveCache(function: ExecutableElement): CodeBlock.Builder {
-        this.add(".doOnNext { %L.%L(%L)", ReponatorProcessor.cacheName, cacheProvider.provideSet(function), computeArguments(function))
+        this.add(".doOnNext { %L.%L(%L)", nameProvider.cacheName, cacheProvider.set(function), computeArguments(function))
                 .indent()
                 .indent()
                 .add(".subscribe(%L) }", emptyObserver)
         return this
     }
 
-
     private fun buildCacheGet(function: ExecutableElement) = CodeBlock.builder()
-            .add("return %L.%L(%L)", ReponatorProcessor.cacheName, cacheProvider.provideGet(function), computeArguments(function))
+            .add("return %L.%L(%L)", nameProvider.cacheName, cacheProvider.get(function), computeArguments(function))
             .build()
-
-    private fun computeGetFunction(function: ExecutableElement): String {
-        return function.simpleName.toString()
-    }
 
     private fun computeArguments(function: ExecutableElement): String {
         val builder = StringBuilder()
@@ -70,10 +72,6 @@ class FunctionGenerator(private val typeUtils: Types,
         }
 
         return builder.toString()
-    }
-
-    private fun computeSaveFunction(function: ExecutableElement): String {
-        return "save${function.simpleName.removePrefix("get")}"
     }
 
     private val emptyObserver = "object : io.reactivex.CompletableObserver {" +

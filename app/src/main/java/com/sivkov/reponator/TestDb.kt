@@ -21,7 +21,7 @@ class TestDb @Inject constructor() {
         return Observable.fromCallable { "Name $index" }
     }
 
-    fun saveName(): Completable {
+    fun setSingleName(): Completable {
         return Completable.complete()
     }
 

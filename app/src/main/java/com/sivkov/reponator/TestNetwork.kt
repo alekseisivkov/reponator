@@ -5,7 +5,7 @@ import io.reactivex.Observable
 
 class TestNetwork {
 
-    fun getName(): Observable<String> {
+    fun downloadName(): Observable<String> {
         return Observable.empty()
     }
 

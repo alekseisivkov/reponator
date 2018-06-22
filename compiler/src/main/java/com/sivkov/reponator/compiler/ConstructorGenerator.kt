@@ -8,21 +8,21 @@ import com.squareup.kotlinpoet.TypeSpec
 import javax.inject.Inject
 import javax.lang.model.element.TypeElement
 
-class ConstructorGenerator(private val provider: ArgProvider) {
+class ConstructorGenerator(private val args: ArgProvider, private val names: NameProvider) {
 
     fun generate(element: TypeElement, builder: TypeSpec.Builder) {
         builder.primaryConstructor(FunSpec.constructorBuilder()
                 .addAnnotation(AnnotationSpec.builder(Inject::class).build())
-                .addParameter(ParameterSpec.builder("val ${ReponatorProcessor.cacheName}",
-                        provider.get(Args.Cache(), element),
+                .addParameter(ParameterSpec.builder("val ${names.cacheName}",
+                        args.get(Args.Cache(), element),
                         KModifier.PRIVATE)
                         .build())
-                .addParameter(ParameterSpec.builder("val ${ReponatorProcessor.storageName}",
-                        provider.get(Args.Storage(), element),
+                .addParameter(ParameterSpec.builder("val ${names.storageName}",
+                        args.get(Args.Storage(), element),
                         KModifier.PRIVATE)
                         .build())
-                .addParameter(ParameterSpec.builder("val ${ReponatorProcessor.networkName}",
-                        provider.get(Args.Network(), element),
+                .addParameter(ParameterSpec.builder("val ${names.networkName}",
+                        args.get(Args.Network(), element),
                         KModifier.PRIVATE)
                         .build())
                 .build())

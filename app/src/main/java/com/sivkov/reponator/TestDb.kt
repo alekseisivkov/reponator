@@ -21,11 +21,19 @@ class TestDb @Inject constructor() {
         return Observable.fromCallable { "Name $index" }
     }
 
+    fun getName(index: Double): Observable<String> {
+        return Observable.fromCallable { "Name $index" }
+    }
+
     fun setSingleName(): Completable {
         return Completable.complete()
     }
 
     fun saveName(index: Int): Completable {
+        return Completable.complete()
+    }
+
+    fun saveName(index: Double): Completable {
         return Completable.complete()
     }
 

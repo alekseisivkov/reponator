@@ -18,7 +18,8 @@ class FunctionGenerator(
         private val nameProvider: NameProvider,
         private val cacheProvider: CacheFunctionProvider,
         private val storageProvider: DbFunctionProvider,
-        private val networkProvider: NetworkFunctionProvider
+        private val networkProvider: NetworkFunctionProvider,
+        private val alterGenerator: AlterGenerator
 ) {
 
     fun generate(function: ExecutableElement) = FunSpec.overriding(function)
@@ -31,6 +32,7 @@ class FunctionGenerator(
             .add(buildFilter(function))
             .add(buildSwitchIfEmpty(buildStorageGet(function)))
             .add(buildSwitchIfEmpty(buildNetworkGet(function)))
+            .add(alterGenerator.provide(function))
             .newLine()
             .build()
 

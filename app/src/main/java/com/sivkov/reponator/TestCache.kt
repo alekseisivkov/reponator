@@ -22,6 +22,10 @@ class TestCache @Inject constructor() {
         return Completable.complete()
     }
 
+    fun saveName(index: Double): Completable {
+        return Completable.complete()
+    }
+
     fun saveNames(): Completable {
         return Completable.complete()
     }
@@ -31,6 +35,10 @@ class TestCache @Inject constructor() {
     }
 
     fun getName(index: Int) : Observable<String> {
+        return Observable.fromCallable { "Name $index" }
+    }
+
+    fun getName(index: Double): Observable<String> {
         return Observable.fromCallable { "Name $index" }
     }
 }

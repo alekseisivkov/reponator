@@ -20,9 +20,11 @@ class CodeGenerator(processingEnv: ProcessingEnvironment) {
     private val storageFunctionProvider = DbFunctionProvider()
     private val networkFunctionProvider = NetworkFunctionProvider()
     private val nameProvider = NameProvider()
+    private val alterNameProvider = AlterNameProvider()
     private val annotationGenerator = AnnotationGenerator()
-    private val constructorGenerator = ConstructorGenerator(argProvider, nameProvider)
-    private val functionGenerator = FunctionGenerator(typeUtils, elements, nameProvider, cacheFunctionProvider, storageFunctionProvider, networkFunctionProvider)
+    private val constructorGenerator = ConstructorGenerator(argProvider, nameProvider, alterNameProvider)
+    private val alterGenerator = AlterGenerator(alterNameProvider)
+    private val functionGenerator = FunctionGenerator(typeUtils, elements, nameProvider, cacheFunctionProvider, storageFunctionProvider, networkFunctionProvider, alterGenerator)
 
 
     fun generate(fileName: String, element: TypeElement) = TypeSpec.classBuilder(fileName).apply {

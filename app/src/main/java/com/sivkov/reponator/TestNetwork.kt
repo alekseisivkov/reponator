@@ -16,4 +16,8 @@ class TestNetwork {
     fun getName(index: Int) : Observable<String> {
         return Observable.fromCallable { "Name $index" }
     }
+
+    fun getName(index: Double): Observable<String> {
+        return Observable.fromCallable { "Name $index" }
+    }
 }
